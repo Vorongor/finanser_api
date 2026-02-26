@@ -32,9 +32,11 @@ finanser_api/
 │   ├── config/                 # Конфігурація (config.py, security.py)
 │   │   ├── dependencies.py     # Migrations files 
 │   │   └── settings.py         # Migrator config 
-│   ├── models/         # SQLAlchemy моделі
-│   ├── schemas/        # Pydantic схеми
-│   ├── db/             # Сесія БД та базовий клас
+│   ├── database/               
+│   │   ├── models/             # package with models 
+│   │   ├── base.py             # Base model 
+│   │   └── engine.py           # Engine, AsyncSession and get_db dependency 
+│   ├── tests/                      # package with tests
 │   └── main.py         # Точка входу
 ├── alembic.ini
 ├── pyproject.toml      # setups uv та ruff
