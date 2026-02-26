@@ -1,0 +1,46 @@
+services:
+  pg_finanser:
+    image: postgres:17
+    container_name: pg_finanser
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: finanser_api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      pg_finanser:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 5
+    develop:
+      watch:
+        - path: ./pyproject.toml
+          action: rebuild
+        - path: ./.env
+          action: rebuild
+        - path: ./src
+          target: /app/src
+          action: sync
+
+volumes:
+  postgres_data:
