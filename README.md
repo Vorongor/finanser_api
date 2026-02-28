@@ -1,4 +1,5 @@
 # Sart rebuild Finanser into REST API and React application
+
 ```
 Моделі та БД
 Міграція моделей: Перепиши моделі Django на SQLAlchemy або Tortoise-ORM.
@@ -21,6 +22,7 @@ Dependency Injection: Використовуй систему залежност
 ```
 
 ## Structure:
+
 ```
 finanser_api/
 ├── src/
@@ -28,17 +30,42 @@ finanser_api/
 │   │   ├── vesions/            # Migrations files 
 │   │   └── env.py              # Migrator config 
 │   ├── api/                    # Ендпоінти (v1, v2...)
-│   │   ├── api.py     # Migrations files 
+│   │   ├── api.py              # Migrations files 
 │   ├── config/                 # Конфігурація (config.py, security.py)
 │   │   ├── dependencies.py     # Migrations files 
 │   │   └── settings.py         # Migrator config 
+│   ├── crud/                   # Package with crud logic
+│   │   ├── user.py             # User crud operation
 │   ├── database/               
 │   │   ├── models/             # package with models 
+│   │   │   ├── user.py         # User model 
 │   │   ├── base.py             # Base model 
 │   │   └── engine.py           # Engine, AsyncSession and get_db dependency 
-│   ├── tests/                      # package with tests
-│   └── main.py         # Точка входу
+│   ├── exeptions/              # Package with all app exeptions
+│   │   ├── security.py         # Security exeption 
+│   │   └── user.py             # User exeptions
+│   ├── schemas/                # Packege pydentic schemas
+│   │   ├── user.py             # User schemas 
+│   ├── security/               # Packege contain all securty logic
+│   │   ├── password.py         # Password helpers 
+│   ├── tests/                  # package with tests
+│   ├── validators/             # Packege contain all securty logic
+│   │   ├── password.py         # Password helpers 
+│   └── main.py                 # Точка входу
 ├── alembic.ini
 ├── pyproject.toml      # setups uv та ruff
 └── .env                # variables
 ```
+
+# Models
+
+## UserModel
+
+| Field               | Type       | Description                  |
+|:--------------------|:-----------|:-----------------------------|
+| **id**              | `int`      | model pk                     |
+| **email**           | `str`      | unique user email            |
+| **hashed_password** | `str`      | hashed user password         |
+| **created_at**      | `datetime` | timestamp of creation        |
+| **updated_at**      | `datetime` | timestamp of last update     |
+| **create**          | `func`     | method to generate new users |
