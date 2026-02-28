@@ -8,15 +8,17 @@ from src.exceptions import (
     BaseUserException,
     UserAlreadyExists,
     UserNotFound,
+    PermissionDenied,
 )
 from src.schemas import (
     UserReadSchema,
     UserCreateSchema,
     UserUpdateSchema,
+    AuthUserSchema,
 )
 
 
-async def _retrieve_user_by_email(
+async def retrieve_user_by_email(
         email: str,
         db: AsyncSession,
 ) -> UserModel | None:
@@ -65,7 +67,7 @@ async def create_new_user(
     Returns:
         UserReadSchema: new user
     """
-    existing_user = await _retrieve_user_by_email(user_data.email, db)
+    existing_user = await retrieve_user_by_email(user_data.email, db)
     if existing_user:
         raise UserAlreadyExists()
     new_user = UserModel.create(
@@ -115,6 +117,7 @@ async def partial_update_user(
         user_id: int,
         update_data: UserUpdateSchema,
         db: AsyncSession,
+        auth_user: AuthUserSchema
 ) -> UserReadSchema:
     """
     Crud operation for partial update of user
@@ -122,10 +125,12 @@ async def partial_update_user(
         user_id: pk of user to update
         update_data: UserUpdateSchema
         db: database session
+        auth_user: authenticated user
     Returns:
         UserReadSchema: updated user
     """
-    # TODO add auth check
+    if user_id != auth_user.id:
+        raise PermissionDenied()
     user = await _retrieve_user_by_id(user_id, db)
     update_dict = update_data.model_dump(exclude_unset=True)
     for key, value in update_dict.items():
@@ -140,15 +145,19 @@ async def partial_update_user(
 
 
 async def delete_user(
-    user_id: int,
-    db: AsyncSession,
+        user_id: int,
+        db: AsyncSession,
+        auth_user: AuthUserSchema
 ) -> None:
     """
     Crud operation for deleting user
     Parameters:
         user_id: pk of user to delete
         db: database session
+        auth_user: authenticated user
     """
+    if user_id != auth_user.id:
+        raise PermissionDenied()
     user = await _retrieve_user_by_id(user_id, db)
     try:
         await db.delete(user)

@@ -1,6 +1,12 @@
 from .security import (
     BaseSecurityException,
-    PasswordError
+    PasswordError,
+    TokenExpiredError,
+    InvalidTokenError,
+    IncorrectCredentialsError,
+    UserEmailNotConfirmed,
+    PermissionDenied,
+    LoggedOutError,
 )
 from .user import (
     BaseUserException,
@@ -12,6 +18,12 @@ __all__ = [
     # security
     "BaseSecurityException",
     "PasswordError",
+    "TokenExpiredError",
+    "InvalidTokenError",
+    "IncorrectCredentialsError",
+    "UserEmailNotConfirmed",
+    "PermissionDenied",
+    "LoggedOutError",
     # User
     "BaseUserException",
     "UserAlreadyExists",

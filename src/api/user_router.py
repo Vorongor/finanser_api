@@ -14,14 +14,16 @@ from src.exceptions import (
     BaseUserException,
     BaseSecurityException,
     UserNotFound,
-    UserAlreadyExists
+    UserAlreadyExists,
+    PermissionDenied,
 )
 from src.schemas import (
     UserCreateSchema,
     UserReadSchema,
-    UserUpdateSchema
+    UserUpdateSchema,
+    AuthUserSchema
 )
-
+from src.security.utils import get_current_user
 
 user_router = APIRouter(prefix="/users", tags=["Users operations"])
 
@@ -111,6 +113,7 @@ async def update(
         user_id: int,
         user_data: UserUpdateSchema,
         db: Annotated[AsyncSession, Depends(get_db)],
+        auth_user: Annotated[AuthUserSchema, Depends(get_current_user)],
 ) -> UserReadSchema:
     """
     Update user fields selectively.
@@ -122,7 +125,7 @@ async def update(
     """
     try:
         user = await partial_update_user(
-            user_id=user_id, user_data=user_data, db=db
+            user_id=user_id, update_data=user_data, db=db, auth_user=auth_user
         )
         return user
     except BaseUserException as err:
@@ -138,18 +141,25 @@ async def update(
     summary="Delete a user",
     responses={
         404: {"description": "User not found"},
+        403: {"description": "Permission denied"},
         400: {"description": "Deletion failed"},
     },
 )
 async def delete(
         user_id: int,
         db: Annotated[AsyncSession, Depends(get_db)],
+        auth_user: Annotated[AuthUserSchema, Depends(get_current_user)],
 ) -> None:
     """
     Remove a user record permanently from the system.
     """
     try:
-        await delete_user(user_id=user_id, db=db)
+        await delete_user(user_id=user_id, db=db, auth_user=auth_user)
+    except PermissionDenied as err:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(err)
+        )
     except UserNotFound as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
