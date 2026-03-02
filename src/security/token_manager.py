@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional, cast, Any
 
@@ -24,6 +25,14 @@ class JWTAuthManager(JWTAuthManagerInterface):
         self._secret_key_access = secret_key_access
         self._secret_key_refresh = secret_key_refresh
         self._algorithm = algorithm
+
+    @staticmethod
+    def create_activation_token() -> str:
+        return os.urandom(32).hex()
+
+    @staticmethod
+    def create_reset_token() -> str:
+        return os.urandom(32).hex()
 
     def _create_token(
         self,

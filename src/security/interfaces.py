@@ -9,6 +9,18 @@ class JWTAuthManagerInterface(ABC):
     Defines methods for creating, decoding, and verifying JWT tokens.
     """
 
+    @staticmethod
+    @abstractmethod
+    def create_activation_token() -> str:
+        """Create a new activation token."""
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def create_reset_token() -> str:
+        """Create a new password reset token."""
+        pass
+
     @abstractmethod
     def create_access_token(
         self,

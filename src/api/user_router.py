@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crud import (
@@ -8,6 +9,7 @@ from src.crud import (
     get_list_of_all_users,
     partial_update_user,
     delete_user,
+    activate_user,
 )
 from src.database import get_db
 from src.exceptions import (
@@ -24,6 +26,8 @@ from src.schemas import (
     AuthUserSchema
 )
 from src.security.utils import get_current_user
+from src.config.dependencies import get_jwt_manager
+from src.security.interfaces import JWTAuthManagerInterface
 
 user_router = APIRouter(prefix="/users", tags=["Users operations"])
 
@@ -40,7 +44,10 @@ user_router = APIRouter(prefix="/users", tags=["Users operations"])
 )
 async def register(
         user_data: UserCreateSchema,
-        db: Annotated[AsyncSession, Depends(get_db)]
+        db: Annotated[AsyncSession, Depends(get_db)],
+        jwt_manager: Annotated[
+            JWTAuthManagerInterface, Depends(get_jwt_manager)
+        ],
 ) -> UserReadSchema:
     """
     Endpoint to register a new user
@@ -55,7 +62,9 @@ async def register(
         - **UserReadSchema**: user data after successful registration
     """
     try:
-        new_user = await create_new_user(user_data=user_data, db=db)
+        new_user = await create_new_user(
+            user_data=user_data, db=db, jwt_manager=jwt_manager
+        )
         return new_user
     except UserAlreadyExists as err:
         raise HTTPException(
@@ -170,3 +179,36 @@ async def delete(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(err)
         )
+
+
+@user_router.get(
+    "/activate",
+    status_code=status.HTTP_200_OK,
+    summary="Activate a user",
+)
+async def activate(
+        token: str,
+        db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """
+    Activate a user by provided token.
+    """
+    try:
+        result = await activate_user(activation_token=token, db=db)
+        return JSONResponse(status_code=status.HTTP_200_OK, content=result)
+    except UserNotFound as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(err)
+        )
+    except BaseUserException as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(err)
+        )
+    # TODO after front redy:
+    # return RedirectResponse(url="https://your-frontend.com/login?status=success")
+    #     except UserNotFound:
+    #         return RedirectResponse(url="https://your-frontend.com/login?status=error&code=not_found")
+    #     except Exception:
+    #         return RedirectResponse(url="https://your-frontend.com/login?status=error")

@@ -3,6 +3,8 @@ services:
     image: postgres:17
     container_name: pg_finanser
     env_file: .env
+    networks:
+      - internal-nw
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -17,6 +19,17 @@ services:
       timeout: 5s
       retries: 5
 
+  additional_db:
+    image: redis:7-alpine
+    container_name: finanser_redis
+    networks:
+      - internal-nw
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   api:
     build: .
     container_name: finanser_api
@@ -26,6 +39,9 @@ services:
       - .env
     ports:
       - "8000:8000"
+    networks:
+      - internal-nw
+#      - proxy-nw
     depends_on:
       pg_finanser:
         condition: service_healthy
@@ -44,8 +60,39 @@ services:
           target: /app/src
           action: sync
 
+  worker:
+    build: .
+    container_name: finanser_worker
+    command: taskiq worker src.config.tkq:broker --fs-discover
+    env_file: .env
+    networks:
+      - internal-nw
+    depends_on:
+      additional_db:
+        condition: service_started
+      pg_finanser:
+        condition: service_healthy
+
+  migrator:
+    build: .
+    container_name: migrator_finanser
+    env_file: .env
+    networks:
+      - internal-nw
+    depends_on:
+      pg_finanser:
+        condition: service_healthy
+    volumes:
+      - ./src/alembic:/app/src/alembic
+      - ./alembic.ini:/app/alembic.ini
+    command: [ "alembic", "upgrade", "head" ]
+    restart: "no"
+
 volumes:
   postgres_data:
 
 networks:
-  proxy-nw: #
+  internal-nw:
+    driver: bridge
+#  proxy-nw:
+#    external: true

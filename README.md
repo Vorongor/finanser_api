@@ -20,6 +20,14 @@ RESTful Routes: Перепиши всі URL-адреси. Замість рен�
 
 Dependency Injection: Використовуй систему залежностей FastAPI для підключення БД до роутів.
 ```
+# Technology:
+- Framework: **FastAPI**
+- DataBase: **PostgreSQL**
+- ORM system: **SQLAlchemy**
+- Migration manager: **alembic**
+- SMTP: **Amazon SES**
+- Task Runner: **Taskiq**
+- Additional DB: **Redis**
 
 ## Structure:
 
