@@ -87,9 +87,9 @@ class JWTAuthManager(JWTAuthManagerInterface):
             )
             return cast(dict[str, Any], payload)
         except ExpiredSignatureError:
-            raise TokenExpiredError
+            raise TokenExpiredError()
         except JWTError:
-            raise InvalidTokenError
+            raise InvalidTokenError()
 
     def decode_refresh_token(self, token: str) -> dict[str, object]:
         """
@@ -101,9 +101,9 @@ class JWTAuthManager(JWTAuthManagerInterface):
             )
             return cast(dict[str, Any], payload)
         except ExpiredSignatureError:
-            raise TokenExpiredError
+            raise TokenExpiredError()
         except JWTError:
-            raise InvalidTokenError
+            raise InvalidTokenError()
 
     def verify_refresh_token_or_raise(self, token: str) -> None:
         """

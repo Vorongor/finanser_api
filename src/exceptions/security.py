@@ -44,3 +44,4 @@ class PermissionDenied(BaseSecurityException):
 class LoggedOutError(BaseSecurityException):
     """Raised when user logged out and try to get access token"""
     details = "User logged out and try to get data"
+

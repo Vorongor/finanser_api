@@ -8,6 +8,7 @@ from .session import (
     LoginResponseSchema,
     LogoutResponseSchema,
     AuthUserSchema,
+    RefreshSchema,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "LoginResponseSchema",
     "LogoutResponseSchema",
     "AuthUserSchema",
+    "RefreshSchema",
 ]

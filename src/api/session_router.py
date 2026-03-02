@@ -4,16 +4,17 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.dependencies import get_jwt_manager
-from src.crud.session import login_user
+from src.crud import login_user, logout_user, refresh_user_token
 from src.database import get_db
 from src.schemas import (
     LoginResponseSchema,
     LoginRequestSchema,
-    AuthUserSchema,
+    AuthUserSchema, LogoutResponseSchema, RefreshSchema,
 )
 from src.security.interfaces import JWTAuthManagerInterface
 
-from src.exceptions import IncorrectCredentialsError, UserEmailNotConfirmed
+from src.exceptions import IncorrectCredentialsError, UserEmailNotConfirmed, \
+    TokenExpiredError, InvalidTokenError, LoggedOutError
 from src.security.utils import get_current_user
 
 session_router = APIRouter(prefix="/session", tags=["Session"])
@@ -48,13 +49,45 @@ async def login(
         )
 
 
-@session_router.post("/logout", )
+@session_router.post(
+    "/logout",
+    status_code=status.HTTP_200_OK,
+    response_model=LogoutResponseSchema,
+)
 async def logout(
         auth_user: Annotated[AuthUserSchema, Depends(get_current_user)],
-):
-    return {"access_token": "", "token_type": "bearer"}
+        db: Annotated[AsyncSession, Depends(get_db)],
+) -> LogoutResponseSchema:
+    try:
+        message = await logout_user(user_data=auth_user, db=db)
+        return LogoutResponseSchema(
+            message=message
+        )
+    except IncorrectCredentialsError as err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=err.details,
+        )
 
 
-@session_router.post("/refresh", )
-async def refresh():
-    return {"access_token": "", "token_type": "bearer"}
+@session_router.post(
+    "/refresh",
+    status_code=status.HTTP_200_OK,
+    response_model=RefreshSchema,
+)
+async def refresh(
+        refresh_data: RefreshSchema,
+        jwt_manager: Annotated[
+            JWTAuthManagerInterface, Depends(get_jwt_manager)
+        ],
+) -> RefreshSchema:
+    try:
+        return await refresh_user_token(
+            refresh_data=refresh_data, jwt_manager=jwt_manager
+        )
+    except (TokenExpiredError, InvalidTokenError) as err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=err.details,
+        )
+

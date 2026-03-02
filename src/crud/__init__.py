@@ -5,6 +5,11 @@ from .user import (
     delete_user,
     activate_user,
 )
+from .session import (
+    login_user,
+    logout_user,
+    refresh_user_token
+)
 
 __all__ = [
     # User
@@ -13,4 +18,8 @@ __all__ = [
     "partial_update_user",
     "delete_user",
     "activate_user",
+    # Session
+    "login_user",
+    "logout_user",
+    "refresh_user_token",
 ]

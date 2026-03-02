@@ -27,7 +27,12 @@ class LogoutResponseSchema(BaseModel):
     message: str
 
 
+class RefreshSchema(BaseModel):
+    token: str
+
+
 class AuthUserSchema(BaseModel):
     id: int
     email: str
     is_active: bool
+    session_id: str

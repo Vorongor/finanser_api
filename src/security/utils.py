@@ -7,28 +7,28 @@ from fastapi.security import (
 )
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
 
 from src.database import get_db
-from src.database.models import UserModel
+from src.database.models import RefreshTokenModel
 from src.exceptions import (
     TokenExpiredError,
     InvalidTokenError,
-    UserNotFound,
     LoggedOutError,
+    UserEmailNotConfirmed,
 )
 from src.schemas import AuthUserSchema
 from src.security.interfaces import JWTAuthManagerInterface
 from src.config.dependencies import get_jwt_manager
 
-
 security_scheme = HTTPBearer()
 
 
 async def get_current_user(
-    db: Annotated[AsyncSession, Depends(get_db)],
-    auth: Annotated[HTTPAuthorizationCredentials, Depends(security_scheme)],
-    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
+        db: Annotated[AsyncSession, Depends(get_db)],
+        auth: Annotated[
+            HTTPAuthorizationCredentials, Depends(security_scheme)],
+        jwt_manager: Annotated[
+            JWTAuthManagerInterface, Depends(get_jwt_manager)],
 ) -> AuthUserSchema:
     token = auth.credentials
     try:
@@ -38,22 +38,34 @@ async def get_current_user(
         raise
 
     user_id = user_data.get("user_id")
+    session_id = user_data.get("session_id")
+    email = user_data.get("email")
+    is_active = user_data.get("is_active")
+
+    if not user_id or not session_id or not email:
+        raise InvalidTokenError(
+            details="Invalid token credentials, please log in again.",
+        )
+
+    if not is_active:
+        raise UserEmailNotConfirmed()
 
     result = await db.execute(
-        select(UserModel)
-        .where(UserModel.id == user_id)
-        # .options(joinedload(UserModel.refresh_tokens))
+        select(RefreshTokenModel)
+        .where(
+            RefreshTokenModel.user_id == user_id,
+            RefreshTokenModel.session_id == session_id,
+        )
     )
-    auth_user = result.unique().scalar_one_or_none()
+    auth_user_token = result.unique().scalar_one_or_none()
 
-    if not auth_user:
-        raise UserNotFound()
-
-    # if not auth_user.refresh_tokens:
-    #     raise LoggedOutError()
+    if not auth_user_token:
+        raise LoggedOutError()
 
     return AuthUserSchema(
-        id=auth_user.id,
-        email=auth_user.email,
-        is_active=auth_user.is_active,
+        id=user_id,
+        email=email,
+        is_active=is_active,
+        session_id=session_id,
+
     )

@@ -155,13 +155,28 @@ class RefreshTokenModel(TokenBaseModel):
         unique=True,
         nullable=False,
     )
+    session_id: Mapped[str] = mapped_column(
+        String(36),
+        nullable=False,
+    )
+
+    __table_args__ = (UniqueConstraint("session_id", "user_id"),)
 
     @classmethod
     def create(
-            cls, user_id: int | Mapped[int], days_valid: int, token: str
+            cls,
+            user_id: int | Mapped[int],
+            days_valid: int,
+            token: str,
+            session_id: str
     ) -> "RefreshTokenModel":
         """
         Factory method to create a new RefreshTokenModel instance.
         """
         expires_at = datetime.now(timezone.utc) + timedelta(days=days_valid)
-        return cls(user_id=user_id, expires_at=expires_at, token=token)
+        return cls(
+            user_id=user_id,
+            expires_at=expires_at,
+            token=token,
+            session_id=session_id
+        )
