@@ -18,6 +18,8 @@ from src.database.base import Base
 from src.enums import CurrencyType, ProfileConnectionStatus
 from src.schemas import ProfileBaseSchema
 
+from .user import UserModel
+
 
 class ProfileConnectionModel(Base):
     __tablename__ = "profile_connections"
@@ -103,8 +105,8 @@ class ProfileModel(Base):
         nullable=False,
         unique=True,
     )
-    user: Mapped["UserModel"] = relationship(
-        "UserModel",
+    user: Mapped[UserModel] = relationship(
+        UserModel,
     )
 
     sent_connections: Mapped[list["ProfileConnectionModel"]] = relationship(
