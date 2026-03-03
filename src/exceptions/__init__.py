@@ -13,6 +13,12 @@ from .user import (
     UserAlreadyExists,
     UserNotFound,
 )
+from .profile import (
+    BaseProfileException,
+    ProfileAlreadyExists,
+    ProfileNotFound,
+    ProfileOperationError,
+)
 
 __all__ = [
     # security
@@ -28,4 +34,9 @@ __all__ = [
     "BaseUserException",
     "UserAlreadyExists",
     "UserNotFound",
+    # Profile
+    "BaseProfileException",
+    "ProfileAlreadyExists",
+    "ProfileNotFound",
+    "ProfileOperationError",
 ]

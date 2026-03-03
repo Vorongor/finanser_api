@@ -10,6 +10,12 @@ from .session import (
     logout_user,
     refresh_user_token
 )
+from .profile import (
+    create_profile,
+    retrieve_profile,
+    update_profile,
+    delete_profile,
+)
 
 __all__ = [
     # User
@@ -22,4 +28,9 @@ __all__ = [
     "login_user",
     "logout_user",
     "refresh_user_token",
+    # Profile
+    "create_profile",
+    "retrieve_profile",
+    "update_profile",
+    "delete_profile",
 ]

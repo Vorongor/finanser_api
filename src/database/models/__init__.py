@@ -4,6 +4,7 @@ from .user import (
     PasswordResetTokenModel,
     RefreshTokenModel,
 )
+from .profile import ProfileModel
 
 __all__ = [
     # User
@@ -11,5 +12,7 @@ __all__ = [
     "ActivationTokenModel",
     "PasswordResetTokenModel",
     "RefreshTokenModel",
+    # Profile
+    "ProfileModel",
 
 ]

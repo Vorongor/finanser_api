@@ -10,6 +10,12 @@ from .session import (
     AuthUserSchema,
     RefreshSchema,
 )
+from .profile import (
+    ProfileBaseSchema,
+    ProfileCreateSchema,
+    ProfileUpdateSchema,
+    ProfileReadSchema,
+)
 
 __all__ = [
     # User
@@ -22,4 +28,9 @@ __all__ = [
     "LogoutResponseSchema",
     "AuthUserSchema",
     "RefreshSchema",
+    # Profile
+    "ProfileBaseSchema",
+    "ProfileCreateSchema",
+    "ProfileUpdateSchema",
+    "ProfileReadSchema",
 ]
