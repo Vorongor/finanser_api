@@ -13,5 +13,5 @@ async def test_database_url_config():
 
 @pytest.mark.asyncio
 async def test_healthcheck(ac):
-    response = await ac.get("/health")
+    response = await ac.get("/api/v1/health")
     assert response.status_code == 200
