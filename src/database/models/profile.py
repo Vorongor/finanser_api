@@ -15,7 +15,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database.base import Base
-from src.database.models import UserModel
 from src.enums import CurrencyType, ProfileConnectionStatus
 from src.schemas import ProfileBaseSchema
 
@@ -104,8 +103,8 @@ class ProfileModel(Base):
         nullable=False,
         unique=True,
     )
-    user: Mapped[UserModel] = relationship(
-        UserModel,
+    user: Mapped["UserModel"] = relationship(
+        "UserModel",
     )
 
     sent_connections: Mapped[list["ProfileConnectionModel"]] = relationship(
