@@ -24,11 +24,9 @@ security_scheme = HTTPBearer()
 
 
 async def get_current_user(
-        db: Annotated[AsyncSession, Depends(get_db)],
-        auth: Annotated[
-            HTTPAuthorizationCredentials, Depends(security_scheme)],
-        jwt_manager: Annotated[
-            JWTAuthManagerInterface, Depends(get_jwt_manager)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    auth: Annotated[HTTPAuthorizationCredentials, Depends(security_scheme)],
+    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
 ) -> AuthUserSchema:
     token = auth.credentials
     try:
@@ -51,8 +49,7 @@ async def get_current_user(
         raise UserEmailNotConfirmed()
 
     result = await db.execute(
-        select(RefreshTokenModel)
-        .where(
+        select(RefreshTokenModel).where(
             RefreshTokenModel.user_id == user_id,
             RefreshTokenModel.session_id == session_id,
         )
@@ -67,5 +64,4 @@ async def get_current_user(
         email=email,
         is_active=is_active,
         session_id=session_id,
-
     )

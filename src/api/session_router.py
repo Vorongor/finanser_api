@@ -9,12 +9,19 @@ from src.database import get_db
 from src.schemas import (
     LoginResponseSchema,
     LoginRequestSchema,
-    AuthUserSchema, LogoutResponseSchema, RefreshSchema,
+    AuthUserSchema,
+    LogoutResponseSchema,
+    RefreshSchema,
 )
 from src.security.interfaces import JWTAuthManagerInterface
 
-from src.exceptions import IncorrectCredentialsError, UserEmailNotConfirmed, \
-    TokenExpiredError, InvalidTokenError, LoggedOutError
+from src.exceptions import (
+    IncorrectCredentialsError,
+    UserEmailNotConfirmed,
+    TokenExpiredError,
+    InvalidTokenError,
+    LoggedOutError,
+)
 from src.security.utils import get_current_user
 
 session_router = APIRouter(prefix="/session", tags=["Session"])
@@ -27,11 +34,9 @@ session_router = APIRouter(prefix="/session", tags=["Session"])
     summary="Login a user, returns tokens",
 )
 async def login(
-        login_data: LoginRequestSchema,
-        db: Annotated[AsyncSession, Depends(get_db)],
-        jwt_manager: Annotated[
-            JWTAuthManagerInterface, Depends(get_jwt_manager)
-        ],
+    login_data: LoginRequestSchema,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
 ):
     try:
         return await login_user(
@@ -55,14 +60,12 @@ async def login(
     response_model=LogoutResponseSchema,
 )
 async def logout(
-        auth_user: Annotated[AuthUserSchema, Depends(get_current_user)],
-        db: Annotated[AsyncSession, Depends(get_db)],
+    auth_user: Annotated[AuthUserSchema, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> LogoutResponseSchema:
     try:
         message = await logout_user(user_data=auth_user, db=db)
-        return LogoutResponseSchema(
-            message=message
-        )
+        return LogoutResponseSchema(message=message)
     except IncorrectCredentialsError as err:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -76,10 +79,8 @@ async def logout(
     response_model=RefreshSchema,
 )
 async def refresh(
-        refresh_data: RefreshSchema,
-        jwt_manager: Annotated[
-            JWTAuthManagerInterface, Depends(get_jwt_manager)
-        ],
+    refresh_data: RefreshSchema,
+    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
 ) -> RefreshSchema:
     try:
         return await refresh_user_token(
@@ -90,4 +91,3 @@ async def refresh(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=err.details,
         )
-

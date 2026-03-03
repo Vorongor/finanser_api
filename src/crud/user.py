@@ -21,8 +21,8 @@ from src.tasks import send_activation_email_task
 
 
 async def retrieve_user_by_email(
-        email: str,
-        db: AsyncSession,
+    email: str,
+    db: AsyncSession,
 ) -> UserModel | None:
     """
     Helper function for retrieving a user by email.
@@ -38,8 +38,8 @@ async def retrieve_user_by_email(
 
 
 async def _retrieve_user_by_id(
-        user_id: int,
-        db: AsyncSession,
+    user_id: int,
+    db: AsyncSession,
 ) -> UserModel | None:
     """
     Retrieves a user by ID.
@@ -58,7 +58,7 @@ async def _retrieve_user_by_id(
             joinedload(UserModel.activation_token),
             joinedload(UserModel.password_reset_token),
             joinedload(UserModel.refresh_tokens),
-        ]
+        ],
     )
     if not user:
         raise UserNotFound()
@@ -66,9 +66,9 @@ async def _retrieve_user_by_id(
 
 
 async def create_new_user(
-        user_data: UserCreateSchema,
-        db: AsyncSession,
-        jwt_manager: JWTAuthManagerInterface,
+    user_data: UserCreateSchema,
+    db: AsyncSession,
+    jwt_manager: JWTAuthManagerInterface,
 ) -> UserReadSchema:
     """
     Crud operation for creating new user
@@ -100,7 +100,8 @@ async def create_new_user(
             email=new_user.email,
             activation_link=(
                 f"http://127.0.0.1:8000/api/v1/users/activate?token={token}"
-            ))
+            ),
+        )
         return UserReadSchema(
             id=new_user.id,
             email=new_user.email,
@@ -110,9 +111,9 @@ async def create_new_user(
 
 
 async def get_list_of_all_users(
-        db: AsyncSession,
-        skip: int = 0,
-        limit: int = 100,
+    db: AsyncSession,
+    skip: int = 0,
+    limit: int = 100,
 ) -> list[UserReadSchema]:
     """
     Crud operation for getting all users according to permission
@@ -123,23 +124,17 @@ async def get_list_of_all_users(
     """
     # TODO Add permission check
     smtp = await db.execute(
-        select(UserModel)
-        .order_by(UserModel.email)
-        .offset(skip)
-        .limit(limit)
+        select(UserModel).order_by(UserModel.email).offset(skip).limit(limit)
     )
     result = smtp.scalars().all()
-    return [
-        UserReadSchema(id=user.id, email=user.email)
-        for user in result
-    ]
+    return [UserReadSchema(id=user.id, email=user.email) for user in result]
 
 
 async def partial_update_user(
-        user_id: int,
-        update_data: UserUpdateSchema,
-        db: AsyncSession,
-        auth_user: AuthUserSchema
+    user_id: int,
+    update_data: UserUpdateSchema,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> UserReadSchema:
     """
     Crud operation for partial update of user
@@ -167,9 +162,7 @@ async def partial_update_user(
 
 
 async def delete_user(
-        user_id: int,
-        db: AsyncSession,
-        auth_user: AuthUserSchema
+    user_id: int, db: AsyncSession, auth_user: AuthUserSchema
 ) -> None:
     """
     Crud operation for deleting user
@@ -189,8 +182,8 @@ async def delete_user(
 
 
 async def activate_user(
-        activation_token: str,
-        db: AsyncSession,
+    activation_token: str,
+    db: AsyncSession,
 ) -> str:
     """
     Crud operation for activating user by token

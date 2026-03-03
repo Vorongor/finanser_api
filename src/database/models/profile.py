@@ -149,4 +149,3 @@ class ProfileModel(Base):
             user_id=user_id,
         )
         return profile
-

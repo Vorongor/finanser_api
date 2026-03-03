@@ -23,6 +23,7 @@ class UserCreateSchema(BaseModel):
         except ValueError as error:
             raise PasswordError(details=str(error))
 
+
 class UserReadSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

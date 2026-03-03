@@ -7,21 +7,25 @@ from sqlalchemy.orm import joinedload
 
 from src.database.models import ProfileModel, ProfileConnectionModel
 from src.enums import ProfileConnectionStatus
-from src.exceptions import ProfileNotFound, ProfileOperationError, \
-    PermissionDenied
+from src.exceptions import (
+    ProfileNotFound,
+    ProfileOperationError,
+    PermissionDenied,
+)
 from src.schemas import (
     AuthUserSchema,
     ProfileReadSchema,
     SocialSearchSchema,
     SocialResponseSchema,
     SocialConnectionSchema,
-    SocialConnectionsResponseSchema, MyConnectionSchema,
+    SocialConnectionsResponseSchema,
+    MyConnectionSchema,
 )
 
 
 async def _get_profile_for_user(
-        auth_user: AuthUserSchema,
-        db: AsyncSession,
+    auth_user: AuthUserSchema,
+    db: AsyncSession,
 ) -> ProfileModel:
     stmt = await db.execute(
         select(ProfileModel).where(ProfileModel.user_id == auth_user.id)
@@ -33,9 +37,9 @@ async def _get_profile_for_user(
 
 
 async def search_users(
-        search_params: SocialSearchSchema,
-        db: AsyncSession,
-        auth_user: AuthUserSchema,
+    search_params: SocialSearchSchema,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> SocialResponseSchema:
     """
     Search for other user profiles.
@@ -87,9 +91,9 @@ async def search_users(
 
 
 async def get_connections(
-        db: AsyncSession,
-        auth_user: AuthUserSchema,
-        filter_data: MyConnectionSchema,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
+    filter_data: MyConnectionSchema,
 ) -> SocialConnectionsResponseSchema:
     """
     Retrieve list of connections for the authenticated user.
@@ -142,7 +146,8 @@ async def get_connections(
                 conn.requester_profile
             ),
             target_profile=ProfileReadSchema.model_validate(
-                conn.target_profile),
+                conn.target_profile
+            ),
         )
         for conn in connections
     ]
@@ -156,9 +161,9 @@ async def get_connections(
 
 
 async def send_connection(
-        target_profile_id: int,
-        db: AsyncSession,
-        auth_user: AuthUserSchema,
+    target_profile_id: int,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> SocialConnectionSchema:
     """
     Create a connection between the authenticated user and another profile
@@ -179,10 +184,12 @@ async def send_connection(
                 and_(
                     ProfileConnectionModel.requester_profile_id
                     == requester_profile.id,
-                    ProfileConnectionModel.target_profile_id == target_profile.id,
+                    ProfileConnectionModel.target_profile_id
+                    == target_profile.id,
                 ),
                 and_(
-                    ProfileConnectionModel.requester_profile_id == target_profile.id,
+                    ProfileConnectionModel.requester_profile_id
+                    == target_profile.id,
                     ProfileConnectionModel.target_profile_id
                     == requester_profile.id,
                 ),
@@ -192,7 +199,8 @@ async def send_connection(
     existing_connection = existing_stmt.scalar_one_or_none()
     if existing_connection:
         raise ProfileOperationError(
-            "Connection between these profiles already exists")
+            "Connection between these profiles already exists"
+        )
 
     connection = ProfileConnectionModel(
         requester_profile_id=requester_profile.id,
@@ -208,8 +216,9 @@ async def send_connection(
             details="Error occurred while trying to create connection"
         )
 
-    await db.refresh(connection,
-                     attribute_names=["requester_profile", "target_profile"])
+    await db.refresh(
+        connection, attribute_names=["requester_profile", "target_profile"]
+    )
 
     return SocialConnectionSchema(
         id=connection.id,
@@ -218,14 +227,15 @@ async def send_connection(
             connection.requester_profile
         ),
         target_profile=ProfileReadSchema.model_validate(
-            connection.target_profile),
+            connection.target_profile
+        ),
     )
 
 
 async def accept_connection(
-        connection_id: int,
-        db: AsyncSession,
-        auth_user: AuthUserSchema,
+    connection_id: int,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> SocialConnectionSchema:
     """
     Accept a connection invitation by setting its status to CONNECTED.
@@ -263,14 +273,15 @@ async def accept_connection(
             connection.requester_profile
         ),
         target_profile=ProfileReadSchema.model_validate(
-            connection.target_profile),
+            connection.target_profile
+        ),
     )
 
 
 async def block_connection(
-        connection_id: int,
-        db: AsyncSession,
-        auth_user: AuthUserSchema,
+    connection_id: int,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> SocialConnectionSchema:
     """
     Block a connection by setting its status to BLOCKED.
@@ -318,9 +329,9 @@ async def block_connection(
 
 
 async def unblock_connection(
-        connection_id: int,
-        db: AsyncSession,
-        auth_user: AuthUserSchema,
+    connection_id: int,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> SocialConnectionSchema:
     """
     Unblock a connection if it was blocked by the authenticated user.
@@ -339,8 +350,8 @@ async def unblock_connection(
         raise ProfileOperationError("Connection not found")
 
     if (
-            connection.status != ProfileConnectionStatus.BLOCKED
-            or connection.blocked_by != auth_user.id
+        connection.status != ProfileConnectionStatus.BLOCKED
+        or connection.blocked_by != auth_user.id
     ):
         raise PermissionDenied(
             details="You are not allowed to unblock connection"
@@ -364,14 +375,15 @@ async def unblock_connection(
             connection.requester_profile
         ),
         target_profile=ProfileReadSchema.model_validate(
-            connection.target_profile),
+            connection.target_profile
+        ),
     )
 
 
 async def remove_connection(
-        connection_id: int,
-        db: AsyncSession,
-        auth_user: AuthUserSchema,
+    connection_id: int,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> None:
     """
     Remove a connection.
@@ -397,9 +409,9 @@ async def remove_connection(
         raise PermissionDenied()
 
     if (
-            connection.status == ProfileConnectionStatus.BLOCKED
-            and connection.blocked_by is not None
-            and connection.blocked_by != auth_user.id
+        connection.status == ProfileConnectionStatus.BLOCKED
+        and connection.blocked_by is not None
+        and connection.blocked_by != auth_user.id
     ):
         raise PermissionDenied()
 

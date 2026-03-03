@@ -8,7 +8,9 @@ from sqlalchemy.orm import selectinload
 from .user import retrieve_user_by_email
 from src.schemas import (
     LoginRequestSchema,
-    LoginResponseSchema, AuthUserSchema, RefreshSchema
+    LoginResponseSchema,
+    AuthUserSchema,
+    RefreshSchema,
 )
 from src.exceptions import (
     IncorrectCredentialsError,
@@ -22,9 +24,9 @@ settings = get_settings()
 
 
 async def login_user(
-        user_data: LoginRequestSchema,
-        db: AsyncSession,
-        jwt_manager: JWTAuthManagerInterface,
+    user_data: LoginRequestSchema,
+    db: AsyncSession,
+    jwt_manager: JWTAuthManagerInterface,
 ) -> LoginResponseSchema:
     """
     Crud function for login user. Create new session and save it to db
@@ -56,7 +58,7 @@ async def login_user(
         user_id=user.id,
         token=refresh_token,
         days_valid=settings.REFRESH_TOKEN_DAYS,
-        session_id=session_id
+        session_id=session_id,
     )
     db.add(db_token)
     try:
@@ -74,8 +76,8 @@ async def login_user(
 
 
 async def logout_user(
-        user_data: AuthUserSchema,
-        db: AsyncSession,
+    user_data: AuthUserSchema,
+    db: AsyncSession,
 ) -> str:
     """
     Crud function for logout user and remove session id from db
@@ -86,14 +88,15 @@ async def logout_user(
     """
     stmt = delete(RefreshTokenModel).where(
         RefreshTokenModel.user_id == user_data.id,
-        RefreshTokenModel.session_id == user_data.session_id
+        RefreshTokenModel.session_id == user_data.session_id,
     )
 
     result = await db.execute(stmt)
 
     if result.rowcount == 0:
         raise IncorrectCredentialsError(
-            details="Session already closed or invalid")
+            details="Session already closed or invalid"
+        )
 
     await db.commit()
     return f"Logged out from session {user_data.session_id}"
@@ -112,12 +115,14 @@ async def refresh_user_token(
     """
     decoded_data = jwt_manager.decode_refresh_token(refresh_data.token)
 
-    new_access_token = jwt_manager.create_access_token(data={
-        "user_id": decoded_data["user_id"],
-        "email": decoded_data["email"],
-        "is_active": decoded_data["is_active"],
-        "session_id": decoded_data["session_id"],
-    })
+    new_access_token = jwt_manager.create_access_token(
+        data={
+            "user_id": decoded_data["user_id"],
+            "email": decoded_data["email"],
+            "is_active": decoded_data["is_active"],
+            "session_id": decoded_data["session_id"],
+        }
+    )
 
     return RefreshSchema(
         token=new_access_token,

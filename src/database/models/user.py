@@ -8,7 +8,7 @@ from sqlalchemy import (
     func,
     Boolean,
     UniqueConstraint,
-    ForeignKey
+    ForeignKey,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -20,9 +20,7 @@ class UserModel(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(
-        String(255), nullable=False, unique=True
-    )
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False
     )
@@ -39,20 +37,19 @@ class UserModel(Base):
     activation_token: Mapped[Optional["ActivationTokenModel"]] = relationship(
         "ActivationTokenModel",
         back_populates="user",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
 
-    password_reset_token: Mapped[
-        Optional["PasswordResetTokenModel"]] = relationship(
-        "PasswordResetTokenModel",
-        back_populates="user",
-        cascade="all, delete-orphan"
+    password_reset_token: Mapped[Optional["PasswordResetTokenModel"]] = (
+        relationship(
+            "PasswordResetTokenModel",
+            back_populates="user",
+            cascade="all, delete-orphan",
+        )
     )
 
     refresh_tokens: Mapped[list["RefreshTokenModel"]] = relationship(
-        "RefreshTokenModel",
-        back_populates="user",
-        cascade="all, delete-orphan"
+        "RefreshTokenModel", back_populates="user", cascade="all, delete-orphan"
     )
 
     @classmethod
@@ -104,8 +101,9 @@ class UserModel(Base):
 class TokenBaseModel(Base):
     __abstract__ = True
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True,
-                                    autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True
+    )
     token: Mapped[str] = mapped_column(
         String(64),
         unique=True,
@@ -114,19 +112,19 @@ class TokenBaseModel(Base):
     expires_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        default=lambda: datetime.now(timezone.utc) + timedelta(days=1)
+        default=lambda: datetime.now(timezone.utc) + timedelta(days=1),
     )
 
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
 
 
 class ActivationTokenModel(TokenBaseModel):
     __tablename__ = "activation_tokens"
 
     user: Mapped[UserModel] = relationship(
-        "UserModel",
-        back_populates="activation_token"
+        "UserModel", back_populates="activation_token"
     )
 
     __table_args__ = (UniqueConstraint("user_id"),)
@@ -136,8 +134,7 @@ class PasswordResetTokenModel(TokenBaseModel):
     __tablename__ = "password_reset_tokens"
 
     user: Mapped[UserModel] = relationship(
-        "UserModel",
-        back_populates="password_reset_token"
+        "UserModel", back_populates="password_reset_token"
     )
 
     __table_args__ = (UniqueConstraint("user_id"),)
@@ -147,8 +144,7 @@ class RefreshTokenModel(TokenBaseModel):
     __tablename__ = "refresh_tokens"
 
     user: Mapped[UserModel] = relationship(
-        "UserModel",
-        back_populates="refresh_tokens"
+        "UserModel", back_populates="refresh_tokens"
     )
     token: Mapped[str] = mapped_column(
         String(512),
@@ -164,11 +160,11 @@ class RefreshTokenModel(TokenBaseModel):
 
     @classmethod
     def create(
-            cls,
-            user_id: int | Mapped[int],
-            days_valid: int,
-            token: str,
-            session_id: str
+        cls,
+        user_id: int | Mapped[int],
+        days_valid: int,
+        token: str,
+        session_id: str,
     ) -> "RefreshTokenModel":
         """
         Factory method to create a new RefreshTokenModel instance.
@@ -178,5 +174,5 @@ class RefreshTokenModel(TokenBaseModel):
             user_id=user_id,
             expires_at=expires_at,
             token=token,
-            session_id=session_id
+            session_id=session_id,
         )

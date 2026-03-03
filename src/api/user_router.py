@@ -23,7 +23,7 @@ from src.schemas import (
     UserCreateSchema,
     UserReadSchema,
     UserUpdateSchema,
-    AuthUserSchema
+    AuthUserSchema,
 )
 from src.security.utils import get_current_user
 from src.config.dependencies import get_jwt_manager
@@ -43,11 +43,9 @@ user_router = APIRouter(prefix="/users", tags=["Users operations"])
     },
 )
 async def register(
-        user_data: UserCreateSchema,
-        db: Annotated[AsyncSession, Depends(get_db)],
-        jwt_manager: Annotated[
-            JWTAuthManagerInterface, Depends(get_jwt_manager)
-        ],
+    user_data: UserCreateSchema,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
 ) -> UserReadSchema:
     """
     Endpoint to register a new user
@@ -68,8 +66,7 @@ async def register(
         return new_user
     except UserAlreadyExists as err:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(err)
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)
         )
 
 
@@ -84,9 +81,9 @@ async def register(
     },
 )
 async def get_users(
-        db: Annotated[AsyncSession, Depends(get_db)],
-        skip: int = 0,
-        limit: int = 100,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    skip: int = 0,
+    limit: int = 100,
 ) -> list[UserReadSchema]:
     """
     Endpoint to retrieve a paginated list of users.
@@ -99,30 +96,29 @@ async def get_users(
         return users
     except BaseSecurityException as err:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(err)
+            status_code=status.HTTP_403_FORBIDDEN, detail=str(err)
         )
     except BaseUserException as err:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(err)
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)
         )
 
 
 @user_router.patch(
     "/{user_id}",
     response_model=UserReadSchema,
-    status_code=status.HTTP_200_OK, summary="Partially update a user",
+    status_code=status.HTTP_200_OK,
+    summary="Partially update a user",
     responses={
         404: {"description": "User not found"},
         400: {"description": "Update conflict or validation error"},
     },
 )
 async def update(
-        user_id: int,
-        user_data: UserUpdateSchema,
-        db: Annotated[AsyncSession, Depends(get_db)],
-        auth_user: Annotated[AuthUserSchema, Depends(get_current_user)],
+    user_id: int,
+    user_data: UserUpdateSchema,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    auth_user: Annotated[AuthUserSchema, Depends(get_current_user)],
 ) -> UserReadSchema:
     """
     Update user fields selectively.
@@ -139,8 +135,7 @@ async def update(
         return user
     except BaseUserException as err:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(err)
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)
         )
 
 
@@ -155,9 +150,9 @@ async def update(
     },
 )
 async def delete(
-        user_id: int,
-        db: Annotated[AsyncSession, Depends(get_db)],
-        auth_user: Annotated[AuthUserSchema, Depends(get_current_user)],
+    user_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    auth_user: Annotated[AuthUserSchema, Depends(get_current_user)],
 ) -> None:
     """
     Remove a user record permanently from the system.
@@ -166,18 +161,15 @@ async def delete(
         await delete_user(user_id=user_id, db=db, auth_user=auth_user)
     except PermissionDenied as err:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(err)
+            status_code=status.HTTP_403_FORBIDDEN, detail=str(err)
         )
     except UserNotFound as err:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(err)
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(err)
         )
     except BaseUserException as err:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(err)
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)
         )
 
 
@@ -187,8 +179,8 @@ async def delete(
     summary="Activate a user",
 )
 async def activate(
-        token: str,
-        db: Annotated[AsyncSession, Depends(get_db)],
+    token: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """
     Activate a user by provided token.
@@ -198,13 +190,11 @@ async def activate(
         return JSONResponse(status_code=status.HTTP_200_OK, content=result)
     except UserNotFound as err:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(err)
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(err)
         )
     except BaseUserException as err:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(err)
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(err)
         )
     # TODO after front redy:
     # return RedirectResponse(url="https://your-frontend.com/login?status=success")

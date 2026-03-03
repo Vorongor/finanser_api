@@ -5,11 +5,7 @@ from .user import (
     delete_user,
     activate_user,
 )
-from .session import (
-    login_user,
-    logout_user,
-    refresh_user_token
-)
+from .session import login_user, logout_user, refresh_user_token
 from .profile import (
     create_profile,
     retrieve_profile,

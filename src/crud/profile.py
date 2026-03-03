@@ -17,8 +17,8 @@ from src.schemas import (
 
 
 async def _retrieve_profile_by_user_id(
-        user_id: int,
-        db: AsyncSession,
+    user_id: int,
+    db: AsyncSession,
 ) -> ProfileModel | None:
     """
     Helper function for retrieving a profile by user id.
@@ -36,9 +36,9 @@ async def _retrieve_profile_by_user_id(
 
 
 async def create_profile(
-        profile_data: ProfileCreateSchema,
-        db: AsyncSession,
-        auth_user: AuthUserSchema,
+    profile_data: ProfileCreateSchema,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> ProfileReadSchema:
     """
     Crud operation for creating a new profile for authenticated user.
@@ -74,8 +74,8 @@ async def create_profile(
 
 
 async def retrieve_profile(
-        db: AsyncSession,
-        auth_user: AuthUserSchema,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> ProfileReadSchema:
     """
     Crud operation for retrieving profile of authenticated user if it exists.
@@ -96,9 +96,9 @@ async def retrieve_profile(
 
 
 async def update_profile(
-        update_data: ProfileUpdateSchema,
-        db: AsyncSession,
-        auth_user: AuthUserSchema,
+    update_data: ProfileUpdateSchema,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> ProfileReadSchema:
     """
     Crud operation for partial update of profile for authenticated user.
@@ -126,14 +126,15 @@ async def update_profile(
         await db.refresh(profile)
     except IntegrityError:
         raise ProfileOperationError(
-            details="Error occurred while trying to update profile")
+            details="Error occurred while trying to update profile"
+        )
 
     return ProfileReadSchema.model_validate(profile)
 
 
 async def delete_profile(
-        db: AsyncSession,
-        auth_user: AuthUserSchema,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> None:
     """
     Crud operation for deleting profile of authenticated user.
@@ -153,4 +154,5 @@ async def delete_profile(
         await db.commit()
     except IntegrityError:
         raise ProfileOperationError(
-            details="Error occurred while trying to delete profile")
+            details="Error occurred while trying to delete profile"
+        )
