@@ -54,9 +54,6 @@ jobs:
       - name: Wait for services to be healthy
         run: sleep 20
 
-      - name: Run migrations
-        run: docker compose exec -T api alembic upgrade head
-
       - name: Run tests inside api container
         run: |
           docker compose exec -T api uv run pytest --cov=src
