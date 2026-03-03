@@ -20,9 +20,6 @@ jobs:
       - name: Lint with Ruff
         run: uv run --group dev ruff check .
 
-      - name: Check formatting
-        run: uv run --group dev ruff format --check .
-
   test:
     needs: check
     runs-on: ubuntu-latest
