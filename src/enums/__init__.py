@@ -1,3 +1,3 @@
-from .profile import CurrencyType
+from .profile import CurrencyType, ProfileConnectionStatus
 
-__all__ = ["CurrencyType"]
+__all__ = ["CurrencyType", "ProfileConnectionStatus"]

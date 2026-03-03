@@ -16,6 +16,15 @@ from .profile import (
     update_profile,
     delete_profile,
 )
+from .social import (
+    search_users,
+    send_connection,
+    accept_connection,
+    block_connection,
+    get_connections,
+    unblock_connection,
+    remove_connection,
+)
 
 __all__ = [
     # User
@@ -33,4 +42,12 @@ __all__ = [
     "retrieve_profile",
     "update_profile",
     "delete_profile",
+    # Social
+    "search_users",
+    "send_connection",
+    "accept_connection",
+    "block_connection",
+    "get_connections",
+    "unblock_connection",
+    "remove_connection",
 ]

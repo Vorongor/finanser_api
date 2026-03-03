@@ -16,6 +16,13 @@ from .profile import (
     ProfileUpdateSchema,
     ProfileReadSchema,
 )
+from .social import (
+    SocialSearchSchema,
+    SocialResponseSchema,
+    SocialConnectionSchema,
+    MyConnectionSchema,
+    SocialConnectionsResponseSchema,
+)
 
 __all__ = [
     # User
@@ -33,4 +40,10 @@ __all__ = [
     "ProfileCreateSchema",
     "ProfileUpdateSchema",
     "ProfileReadSchema",
+    # Social
+    "SocialSearchSchema",
+    "SocialResponseSchema",
+    "SocialConnectionSchema",
+    "MyConnectionSchema",
+    "SocialConnectionsResponseSchema",
 ]

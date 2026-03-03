@@ -18,3 +18,9 @@ class CurrencyType(StrEnum):
     NOK = auto()
     INR = auto()
     SGD = auto()
+
+
+class ProfileConnectionStatus(StrEnum):
+    PENDING = auto()
+    CONNECTED = auto()
+    BLOCKED = auto()
