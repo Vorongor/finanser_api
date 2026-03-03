@@ -3,26 +3,26 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
-from src.database.models import UserModel, ActivationTokenModel
+from src.database.models import ActivationTokenModel, UserModel
 from src.exceptions import (
     BaseUserException,
+    PermissionDenied,
     UserAlreadyExists,
     UserNotFound,
-    PermissionDenied,
 )
 from src.schemas import (
-    UserReadSchema,
-    UserCreateSchema,
-    UserUpdateSchema,
     AuthUserSchema,
+    UserCreateSchema,
+    UserReadSchema,
+    UserUpdateSchema,
 )
 from src.security.interfaces import JWTAuthManagerInterface
 from src.tasks import send_activation_email_task
 
 
 async def retrieve_user_by_email(
-        email: str,
-        db: AsyncSession,
+    email: str,
+    db: AsyncSession,
 ) -> UserModel | None:
     """
     Helper function for retrieving a user by email.
@@ -38,8 +38,8 @@ async def retrieve_user_by_email(
 
 
 async def _retrieve_user_by_id(
-        user_id: int,
-        db: AsyncSession,
+    user_id: int,
+    db: AsyncSession,
 ) -> UserModel | None:
     """
     Retrieves a user by ID.
@@ -58,17 +58,17 @@ async def _retrieve_user_by_id(
             joinedload(UserModel.activation_token),
             joinedload(UserModel.password_reset_token),
             joinedload(UserModel.refresh_tokens),
-        ]
+        ],
     )
     if not user:
-        raise UserNotFound()
+        raise UserNotFound() from None
     return user
 
 
 async def create_new_user(
-        user_data: UserCreateSchema,
-        db: AsyncSession,
-        jwt_manager: JWTAuthManagerInterface,
+    user_data: UserCreateSchema,
+    db: AsyncSession,
+    jwt_manager: JWTAuthManagerInterface,
 ) -> UserReadSchema:
     """
     Crud operation for creating new user
@@ -100,19 +100,20 @@ async def create_new_user(
             email=new_user.email,
             activation_link=(
                 f"http://127.0.0.1:8000/api/v1/users/activate?token={token}"
-            ))
+            ),
+        )
         return UserReadSchema(
             id=new_user.id,
             email=new_user.email,
         )
-    except IntegrityError:
-        raise UserAlreadyExists()
+    except IntegrityError as err:
+        raise UserAlreadyExists() from err
 
 
 async def get_list_of_all_users(
-        db: AsyncSession,
-        skip: int = 0,
-        limit: int = 100,
+    db: AsyncSession,
+    skip: int = 0,
+    limit: int = 100,
 ) -> list[UserReadSchema]:
     """
     Crud operation for getting all users according to permission
@@ -123,23 +124,17 @@ async def get_list_of_all_users(
     """
     # TODO Add permission check
     smtp = await db.execute(
-        select(UserModel)
-        .order_by(UserModel.email)
-        .offset(skip)
-        .limit(limit)
+        select(UserModel).order_by(UserModel.email).offset(skip).limit(limit)
     )
     result = smtp.scalars().all()
-    return [
-        UserReadSchema(id=user.id, email=user.email)
-        for user in result
-    ]
+    return [UserReadSchema(id=user.id, email=user.email) for user in result]
 
 
 async def partial_update_user(
-        user_id: int,
-        update_data: UserUpdateSchema,
-        db: AsyncSession,
-        auth_user: AuthUserSchema
+    user_id: int,
+    update_data: UserUpdateSchema,
+    db: AsyncSession,
+    auth_user: AuthUserSchema,
 ) -> UserReadSchema:
     """
     Crud operation for partial update of user
@@ -162,14 +157,12 @@ async def partial_update_user(
         await db.commit()
         await db.refresh(user)
         return UserReadSchema(id=user.id, email=user.email)
-    except IntegrityError:
-        raise UserAlreadyExists()
+    except IntegrityError as err:
+        raise UserAlreadyExists() from err
 
 
 async def delete_user(
-        user_id: int,
-        db: AsyncSession,
-        auth_user: AuthUserSchema
+    user_id: int, db: AsyncSession, auth_user: AuthUserSchema
 ) -> None:
     """
     Crud operation for deleting user
@@ -184,13 +177,13 @@ async def delete_user(
     try:
         await db.delete(user)
         await db.commit()
-    except IntegrityError:
-        raise BaseUserException()
+    except IntegrityError as err:
+        raise BaseUserException()  from err
 
 
 async def activate_user(
-        activation_token: str,
-        db: AsyncSession,
+    activation_token: str,
+    db: AsyncSession,
 ) -> str:
     """
     Crud operation for activating user by token
@@ -207,10 +200,10 @@ async def activate_user(
         )
         db_token = smtp.scalar_one_or_none()
         if not db_token:
-            raise UserNotFound()
+            raise UserNotFound() from None
         user = db_token.user
         if not user:
-            raise UserNotFound()
+            raise UserNotFound() from None
         if user.is_active:
             await db.delete(db_token)
             await db.commit()
@@ -220,7 +213,7 @@ async def activate_user(
         await db.delete(db_token)
         await db.commit()
         return "User successfully activated"
-    except IntegrityError:
+    except IntegrityError as err:
         raise BaseUserException(
             details="Error occurred while trying to activate user",
-        )
+        ) from err

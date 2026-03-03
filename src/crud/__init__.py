@@ -1,29 +1,25 @@
-from .user import (
-    create_new_user,
-    get_list_of_all_users,
-    partial_update_user,
-    delete_user,
-    activate_user,
-)
-from .session import (
-    login_user,
-    logout_user,
-    refresh_user_token
-)
 from .profile import (
     create_profile,
+    delete_profile,
     retrieve_profile,
     update_profile,
-    delete_profile,
 )
+from .session import login_user, logout_user, refresh_user_token
 from .social import (
-    search_users,
-    send_connection,
     accept_connection,
     block_connection,
     get_connections,
-    unblock_connection,
     remove_connection,
+    search_users,
+    send_connection,
+    unblock_connection,
+)
+from .user import (
+    activate_user,
+    create_new_user,
+    delete_user,
+    get_list_of_all_users,
+    partial_update_user,
 )
 
 __all__ = [

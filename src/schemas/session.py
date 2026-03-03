@@ -14,7 +14,7 @@ class LoginRequestSchema(BaseModel):
         try:
             return validate_password(v)
         except ValueError as err:
-            raise PasswordError(str(err))
+            raise PasswordError(str(err)) from err
 
 
 class LoginResponseSchema(BaseModel):

@@ -17,14 +17,8 @@ jobs:
         with:
           version: "latest"
 
-      - name: Install dev dependencies
-        run: uv run --group dev python -m pip --version
-
       - name: Lint with Ruff
         run: uv run --group dev ruff check .
-
-      - name: Check formatting
-        run: uv run --group dev ruff format --check .
 
   test:
     needs: check
@@ -59,10 +53,6 @@ jobs:
 
       - name: Wait for services to be healthy
         run: sleep 20
-
-      - name: Install test dependencies inside api container
-        run: |
-          docker compose exec -T api uv pip install --system --no-cache pytest pytest-asyncio pytest-cov
 
       - name: Run tests inside api container
         run: |

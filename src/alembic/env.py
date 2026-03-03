@@ -6,10 +6,9 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-
 from src.config import get_settings
-from src.database.models import UserModel  # noqa
 from src.database.base import Base
+from src.database.models import UserModel  # noqa
 
 settings = get_settings()
 config = context.config

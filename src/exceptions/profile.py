@@ -19,4 +19,3 @@ class ProfileNotFound(BaseProfileException):
 
 class ProfileOperationError(BaseProfileException):
     details = "Error occurred during profile operation"
-

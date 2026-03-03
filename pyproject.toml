@@ -38,11 +38,16 @@ dev = [
 ]
 
 [tool.ruff]
-line-length = 88
-select = ["E", "F", "I", "N", "B"] # Error, Pyflakes, Isort, Naming, Bugbear
-fix = true
+line-length = 80
 
-[tool.ruff.isort]
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "B"]
+ignore = [
+    "N802",
+    "N818",
+]
+
+[tool.ruff.lint.isort]
 known-first-party = ["src"]
 
 

@@ -1,8 +1,7 @@
-from typing import Optional, List
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Mapped
 
 from src.enums import ProfileConnectionStatus
 from src.schemas.profile import ProfileReadSchema
@@ -20,7 +19,7 @@ class SocialSearchSchema(BaseModel):
 class MyConnectionSchema(BaseModel):
     skip: int = Field(default=0, ge=0)
     limit: int = Field(default=25, ge=1)
-    status: Optional[ProfileConnectionStatus] = "",
+    status: Optional[ProfileConnectionStatus] = ("",)
 
 
 class SocialResponseSchema(BaseModel):
@@ -42,4 +41,3 @@ class SocialConnectionsResponseSchema(BaseModel):
     total: int
     skip: int
     limit: int
-

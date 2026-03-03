@@ -1,20 +1,18 @@
 FROM python:3.13-slim
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    ENVIRONMENT=docker \
     PATH="/root/.local/bin:$PATH"
 
 WORKDIR /app
-
-RUN pip install --no-cache-dir uv
 
 COPY pyproject.toml uv.lock ./
 
 RUN uv pip install --system --no-cache -r pyproject.toml
 
-COPY . ./
-COPY alembic.ini .
+COPY . .
 
 EXPOSE 8000
 

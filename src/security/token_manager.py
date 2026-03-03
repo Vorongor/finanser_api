@@ -1,10 +1,11 @@
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Optional, cast, Any
+from typing import Any, Optional, cast
 
-from jose import jwt, JWTError, ExpiredSignatureError
+from jose import ExpiredSignatureError, JWTError, jwt
 
-from src.exceptions import TokenExpiredError, InvalidTokenError
+from src.exceptions import InvalidTokenError, TokenExpiredError
+
 from .interfaces import JWTAuthManagerInterface
 
 
@@ -17,7 +18,9 @@ class JWTAuthManager(JWTAuthManagerInterface):
     _ACCESS_KEY_TIMEDELTA_MINUTES = 60
     _REFRESH_KEY_TIMEDELTA_MINUTES = 60 * 24 * 7
 
-    def __init__(self, secret_key_access: str, secret_key_refresh: str, algorithm: str):
+    def __init__(
+        self, secret_key_access: str, secret_key_refresh: str, algorithm: str
+    ):
         """
         Initialize the manager with secret keys and algorithm for token
         operations.
@@ -46,7 +49,9 @@ class JWTAuthManager(JWTAuthManagerInterface):
         to_encode = data.copy()
         expire = datetime.now(timezone.utc) + expires_delta
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, secret_key, algorithm=self._algorithm)
+        encoded_jwt = jwt.encode(
+            to_encode, secret_key, algorithm=self._algorithm
+        )
         return cast(str, encoded_jwt)
 
     def create_access_token(
@@ -60,7 +65,8 @@ class JWTAuthManager(JWTAuthManagerInterface):
         return self._create_token(
             data,
             self._secret_key_access,
-            expires_delta or timedelta(minutes=self._ACCESS_KEY_TIMEDELTA_MINUTES),
+            expires_delta
+            or timedelta(minutes=self._ACCESS_KEY_TIMEDELTA_MINUTES),
         )
 
     def create_refresh_token(
@@ -74,7 +80,8 @@ class JWTAuthManager(JWTAuthManagerInterface):
         return self._create_token(
             data,
             self._secret_key_refresh,
-            expires_delta or timedelta(minutes=self._REFRESH_KEY_TIMEDELTA_MINUTES),
+            expires_delta
+            or timedelta(minutes=self._REFRESH_KEY_TIMEDELTA_MINUTES),
         )
 
     def decode_access_token(self, token: str) -> dict[str, object]:
@@ -86,10 +93,10 @@ class JWTAuthManager(JWTAuthManagerInterface):
                 token, self._secret_key_access, algorithms=[self._algorithm]
             )
             return cast(dict[str, Any], payload)
-        except ExpiredSignatureError:
-            raise TokenExpiredError()
-        except JWTError:
-            raise InvalidTokenError()
+        except ExpiredSignatureError as err:
+            raise TokenExpiredError() from err
+        except JWTError as err:
+            raise InvalidTokenError() from err
 
     def decode_refresh_token(self, token: str) -> dict[str, object]:
         """
@@ -100,10 +107,10 @@ class JWTAuthManager(JWTAuthManagerInterface):
                 token, self._secret_key_refresh, algorithms=[self._algorithm]
             )
             return cast(dict[str, Any], payload)
-        except ExpiredSignatureError:
-            raise TokenExpiredError()
-        except JWTError:
-            raise InvalidTokenError()
+        except ExpiredSignatureError as err:
+            raise TokenExpiredError() from err
+        except JWTError as err:
+            raise InvalidTokenError() from err
 
     def verify_refresh_token_or_raise(self, token: str) -> None:
         """

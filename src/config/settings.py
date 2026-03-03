@@ -18,8 +18,12 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_DAYS: int = 7
     ACCESS_KEY_TIMEDELTA_MINUTES: int = 60
 
-    SECRET_KEY_ACCESS: str = Field("placeholder_access", alias="SECRET_KEY_ACCESS")
-    SECRET_KEY_REFRESH: str = Field("placeholder_refresh", alias="SECRET_KEY_REFRESH")
+    SECRET_KEY_ACCESS: str = Field(
+        "placeholder_access", alias="SECRET_KEY_ACCESS"
+    )
+    SECRET_KEY_REFRESH: str = Field(
+        "placeholder_refresh", alias="SECRET_KEY_REFRESH"
+    )
     JWT_SIGNING_ALGORITHM: str = "HS256"
 
     POSTGRES_USER: str
