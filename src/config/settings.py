@@ -24,9 +24,19 @@ class Settings(BaseSettings):
 
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
-    POSTGRES_HOST: str
+    POSTGRES_HOST: str = "pg_finanser"
     POSTGRES_DB_PORT: int = 5432
     POSTGRES_DB: str
+
+    REDIS_HOST: str = Field(
+        default="additional_db", validation_alias="REDIS_HOST"
+    )
+    REDIS_PORT: int = Field(default=6379, validation_alias="REDIS_PORT")
+
+    AWS_REGION: str
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    MAIL_FROM: str
 
     @computed_field
     @property
@@ -36,3 +46,8 @@ class Settings(BaseSettings):
             f":{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}"
             f":{self.POSTGRES_DB_PORT}/{self.POSTGRES_DB}"
         )
+
+    @computed_field
+    @property
+    def REDIS_URL(self) -> str:
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"

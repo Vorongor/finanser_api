@@ -35,11 +35,10 @@ AsyncSessionLocal = async_sessionmaker(
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     Provide an asynchronous database session.
-
     This function returns an async generator yielding a new database session.
     It ensures that the session is properly closed after use.
-
-    :return: An asynchronous generator yielding an AsyncSession instance.
+    Returns:
+        db: An asynchronous generator yielding an AsyncSession instance.
     """
 
     async with AsyncSessionLocal() as db:
