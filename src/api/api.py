@@ -14,3 +14,8 @@ api_v1_router.include_router(user_router)
 api_v1_router.include_router(session_router)
 api_v1_router.include_router(profile_router)
 api_v1_router.include_router(social_router)
+
+
+@api_v1_router.get("/health", tags=["helthcheck"], status_code=200)
+def health_check():
+    return {"status": "ok"}
