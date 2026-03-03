@@ -5,19 +5,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crud import (
     create_profile,
+    delete_profile,
     retrieve_profile,
     update_profile,
-    delete_profile,
 )
 from src.database import get_db
 from src.exceptions import (
+    InvalidTokenError,
+    LoggedOutError,
     ProfileAlreadyExists,
     ProfileNotFound,
     ProfileOperationError,
     TokenExpiredError,
-    InvalidTokenError,
     UserEmailNotConfirmed,
-    LoggedOutError,
 )
 from src.schemas import (
     AuthUserSchema,
@@ -63,20 +63,20 @@ async def create(
     except (TokenExpiredError, InvalidTokenError, LoggedOutError) as err:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=str(err)
-        )
+        ) from err
     except UserEmailNotConfirmed as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail=str(err)
-        )
+        ) from err
     except ProfileAlreadyExists as err:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=str(err)
-        )
+        ) from err
     except ProfileOperationError as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(err),
-        )
+        ) from err
 
 
 @profile_router.get(
@@ -102,15 +102,15 @@ async def retrieve(
     except (TokenExpiredError, InvalidTokenError, LoggedOutError) as err:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=str(err)
-        )
+        ) from err
     except UserEmailNotConfirmed as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail=str(err)
-        )
+        ) from err
     except ProfileNotFound as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(err)
-        )
+        ) from err
 
 
 @profile_router.patch(
@@ -144,20 +144,20 @@ async def update(
     except (TokenExpiredError, InvalidTokenError, LoggedOutError) as err:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=str(err)
-        )
+        ) from err
     except UserEmailNotConfirmed as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail=str(err)
-        )
+        ) from err
     except ProfileNotFound as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(err)
-        )
+        ) from err
     except ProfileOperationError as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(err),
-        )
+        ) from err
 
 
 @profile_router.delete(
@@ -183,17 +183,17 @@ async def delete(
     except (TokenExpiredError, InvalidTokenError, LoggedOutError) as err:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=str(err)
-        )
+        ) from err
     except UserEmailNotConfirmed as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail=str(err)
-        )
+        ) from err
     except ProfileNotFound as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(err)
-        )
+        ) from err
     except ProfileOperationError as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(err),
-        )
+        ) from err

@@ -65,10 +65,10 @@ async def create_profile(
     try:
         await db.commit()
         await db.refresh(profile)
-    except IntegrityError:
+    except IntegrityError as err:
         raise ProfileOperationError(
             details="Error occurred while trying to create profile"
-        )
+        )  from err
 
     return ProfileReadSchema.model_validate(profile)
 
@@ -90,7 +90,7 @@ async def retrieve_profile(
         db=db,
     )
     if not profile:
-        raise ProfileNotFound()
+        raise ProfileNotFound() from None
 
     return ProfileReadSchema.model_validate(profile)
 
@@ -114,7 +114,7 @@ async def update_profile(
         db=db,
     )
     if not profile:
-        raise ProfileNotFound()
+        raise ProfileNotFound() from None
 
     update_dict = update_data.model_dump(exclude_unset=True)
     for key, value in update_dict.items():
@@ -124,10 +124,10 @@ async def update_profile(
     try:
         await db.commit()
         await db.refresh(profile)
-    except IntegrityError:
+    except IntegrityError as err:
         raise ProfileOperationError(
             details="Error occurred while trying to update profile"
-        )
+        )  from err
 
     return ProfileReadSchema.model_validate(profile)
 
@@ -147,12 +147,12 @@ async def delete_profile(
         db=db,
     )
     if not profile:
-        raise ProfileNotFound()
+        raise ProfileNotFound() from None
 
     try:
         await db.delete(profile)
         await db.commit()
-    except IntegrityError:
+    except IntegrityError as err:
         raise ProfileOperationError(
             details="Error occurred while trying to delete profile"
-        )
+        ) from err

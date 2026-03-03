@@ -1,10 +1,10 @@
+from .profile import ProfileConnectionModel, ProfileModel
 from .user import (
-    UserModel,
     ActivationTokenModel,
     PasswordResetTokenModel,
     RefreshTokenModel,
+    UserModel,
 )
-from .profile import ProfileModel, ProfileConnectionModel
 
 __all__ = [
     # User

@@ -1,24 +1,24 @@
 from uuid import uuid4
 
-from sqlalchemy import select, delete
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy import delete
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
-from .user import retrieve_user_by_email
-from src.schemas import (
-    LoginRequestSchema,
-    LoginResponseSchema,
-    AuthUserSchema,
-    RefreshSchema,
-)
+from src.config import get_settings
+from src.database.models import RefreshTokenModel
 from src.exceptions import (
     IncorrectCredentialsError,
     UserEmailNotConfirmed,
 )
+from src.schemas import (
+    AuthUserSchema,
+    LoginRequestSchema,
+    LoginResponseSchema,
+    RefreshSchema,
+)
 from src.security.interfaces import JWTAuthManagerInterface
-from src.config import get_settings
-from src.database.models import RefreshTokenModel, UserModel
+
+from .user import retrieve_user_by_email
 
 settings = get_settings()
 
@@ -63,10 +63,10 @@ async def login_user(
     db.add(db_token)
     try:
         await db.commit()
-    except IntegrityError:
+    except IntegrityError as err:
         raise IncorrectCredentialsError(
             details="Unable to log in with provided credentials",
-        )
+        ) from err
 
     return LoginResponseSchema(
         access_token=access_token,

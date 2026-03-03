@@ -8,17 +8,17 @@ from fastapi.security import (
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.config.dependencies import get_jwt_manager
 from src.database import get_db
 from src.database.models import RefreshTokenModel
 from src.exceptions import (
-    TokenExpiredError,
     InvalidTokenError,
     LoggedOutError,
+    TokenExpiredError,
     UserEmailNotConfirmed,
 )
 from src.schemas import AuthUserSchema
 from src.security.interfaces import JWTAuthManagerInterface
-from src.config.dependencies import get_jwt_manager
 
 security_scheme = HTTPBearer()
 
@@ -43,7 +43,7 @@ async def get_current_user(
     if not user_id or not session_id or not email:
         raise InvalidTokenError(
             details="Invalid token credentials, please log in again.",
-        )
+        ) from None
 
     if not is_active:
         raise UserEmailNotConfirmed()
@@ -57,7 +57,7 @@ async def get_current_user(
     auth_user_token = result.unique().scalar_one_or_none()
 
     if not auth_user_token:
-        raise LoggedOutError()
+        raise LoggedOutError() from None
 
     return AuthUserSchema(
         id=user_id,

@@ -4,7 +4,6 @@ from aiobotocore.session import get_session
 from src.config import get_settings
 from src.config.tkq import broker
 
-
 settings = get_settings()
 template_loader = jinja2.FileSystemLoader(searchpath="./src/templates")
 template_env = jinja2.Environment(loader=template_loader)

@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends
+
 from src.config.settings import Settings
 from src.security.interfaces import JWTAuthManagerInterface
 from src.security.token_manager import JWTAuthManager

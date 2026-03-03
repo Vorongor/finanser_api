@@ -1,8 +1,7 @@
-from typing import Optional, List
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Mapped
 
 from src.enums import ProfileConnectionStatus
 from src.schemas.profile import ProfileReadSchema

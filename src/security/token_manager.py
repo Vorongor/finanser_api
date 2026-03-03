@@ -1,10 +1,11 @@
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Optional, cast, Any
+from typing import Any, Optional, cast
 
-from jose import jwt, JWTError, ExpiredSignatureError
+from jose import ExpiredSignatureError, JWTError, jwt
 
-from src.exceptions import TokenExpiredError, InvalidTokenError
+from src.exceptions import InvalidTokenError, TokenExpiredError
+
 from .interfaces import JWTAuthManagerInterface
 
 
@@ -92,10 +93,10 @@ class JWTAuthManager(JWTAuthManagerInterface):
                 token, self._secret_key_access, algorithms=[self._algorithm]
             )
             return cast(dict[str, Any], payload)
-        except ExpiredSignatureError:
-            raise TokenExpiredError()
-        except JWTError:
-            raise InvalidTokenError()
+        except ExpiredSignatureError as err:
+            raise TokenExpiredError() from err
+        except JWTError as err:
+            raise InvalidTokenError() from err
 
     def decode_refresh_token(self, token: str) -> dict[str, object]:
         """
@@ -106,10 +107,10 @@ class JWTAuthManager(JWTAuthManagerInterface):
                 token, self._secret_key_refresh, algorithms=[self._algorithm]
             )
             return cast(dict[str, Any], payload)
-        except ExpiredSignatureError:
-            raise TokenExpiredError()
-        except JWTError:
-            raise InvalidTokenError()
+        except ExpiredSignatureError as err:
+            raise TokenExpiredError() from err
+        except JWTError as err:
+            raise InvalidTokenError() from err
 
     def verify_refresh_token_or_raise(self, token: str) -> None:
         """

@@ -1,27 +1,25 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.dependencies import get_jwt_manager
 from src.crud import login_user, logout_user, refresh_user_token
 from src.database import get_db
+from src.exceptions import (
+    IncorrectCredentialsError,
+    InvalidTokenError,
+    TokenExpiredError,
+    UserEmailNotConfirmed,
+)
 from src.schemas import (
-    LoginResponseSchema,
-    LoginRequestSchema,
     AuthUserSchema,
+    LoginRequestSchema,
+    LoginResponseSchema,
     LogoutResponseSchema,
     RefreshSchema,
 )
 from src.security.interfaces import JWTAuthManagerInterface
-
-from src.exceptions import (
-    IncorrectCredentialsError,
-    UserEmailNotConfirmed,
-    TokenExpiredError,
-    InvalidTokenError,
-    LoggedOutError,
-)
 from src.security.utils import get_current_user
 
 session_router = APIRouter(prefix="/session", tags=["Session"])
@@ -46,12 +44,12 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=err.details,
-        )
+        ) from err
     except UserEmailNotConfirmed as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=err.details,
-        )
+        ) from err
 
 
 @session_router.post(
@@ -70,7 +68,7 @@ async def logout(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=err.details,
-        )
+        ) from err
 
 
 @session_router.post(
@@ -90,4 +88,4 @@ async def refresh(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=err.details,
-        )
+        ) from err

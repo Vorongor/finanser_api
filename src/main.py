@@ -1,8 +1,8 @@
-from fastapi import FastAPI, status, Request
+from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
 from .api import api_v1_router
-from .exceptions import PasswordError, IncorrectCredentialsError, LoggedOutError
+from .exceptions import LoggedOutError, PasswordError
 
 app = FastAPI()
 

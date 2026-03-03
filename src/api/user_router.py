@@ -1,33 +1,33 @@
 from typing import Annotated
 
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.config.dependencies import get_jwt_manager
 from src.crud import (
+    activate_user,
     create_new_user,
+    delete_user,
     get_list_of_all_users,
     partial_update_user,
-    delete_user,
-    activate_user,
 )
 from src.database import get_db
 from src.exceptions import (
-    BaseUserException,
     BaseSecurityException,
-    UserNotFound,
-    UserAlreadyExists,
+    BaseUserException,
     PermissionDenied,
+    UserAlreadyExists,
+    UserNotFound,
 )
 from src.schemas import (
+    AuthUserSchema,
     UserCreateSchema,
     UserReadSchema,
     UserUpdateSchema,
-    AuthUserSchema,
 )
-from src.security.utils import get_current_user
-from src.config.dependencies import get_jwt_manager
 from src.security.interfaces import JWTAuthManagerInterface
+from src.security.utils import get_current_user
 
 user_router = APIRouter(prefix="/users", tags=["Users operations"])
 
@@ -67,7 +67,7 @@ async def register(
     except UserAlreadyExists as err:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)
-        )
+        ) from err
 
 
 @user_router.get(
@@ -97,11 +97,11 @@ async def get_users(
     except BaseSecurityException as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail=str(err)
-        )
+        ) from err
     except BaseUserException as err:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)
-        )
+        ) from err
 
 
 @user_router.patch(
@@ -136,7 +136,7 @@ async def update(
     except BaseUserException as err:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)
-        )
+        ) from err
 
 
 @user_router.delete(
@@ -162,15 +162,15 @@ async def delete(
     except PermissionDenied as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail=str(err)
-        )
+        ) from err
     except UserNotFound as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(err)
-        )
+        ) from err
     except BaseUserException as err:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)
-        )
+        ) from err
 
 
 @user_router.get(
@@ -191,11 +191,11 @@ async def activate(
     except UserNotFound as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(err)
-        )
+        ) from err
     except BaseUserException as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(err)
-        )
+        ) from err
     # TODO after front redy:
     # return RedirectResponse(url="https://your-frontend.com/login?status=success")
     #     except UserNotFound:

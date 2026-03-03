@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 
-from .user_router import user_router
-from .session_router import session_router
-from .profile_router import profile_router
-from .social_router import social_router
 from src.config import get_settings
+
+from .profile_router import profile_router
+from .session_router import session_router
+from .social_router import social_router
+from .user_router import user_router
 
 settings = get_settings()
 

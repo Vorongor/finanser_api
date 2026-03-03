@@ -1,31 +1,31 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crud import (
-    search_users,
-    get_connections,
-    send_connection,
     accept_connection,
     block_connection,
-    unblock_connection,
+    get_connections,
     remove_connection,
+    search_users,
+    send_connection,
+    unblock_connection,
 )
 from src.database import get_db
 from src.exceptions import (
-    ProfileOperationError,
-    ProfileNotFound,
     PermissionDenied,
+    ProfileNotFound,
+    ProfileOperationError,
 )
 from src.schemas import (
     AuthUserSchema,
-    SocialSearchSchema,
-    SocialResponseSchema,
+    MyConnectionSchema,
     SocialConnectionSchema,
     SocialConnectionsResponseSchema,
-    MyConnectionSchema,
+    SocialResponseSchema,
+    SocialSearchSchema,
 )
 from src.security.utils import get_current_user
 
@@ -52,7 +52,7 @@ async def get_social_list(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Users not found",
-        )
+        ) from None
 
     return result
 
@@ -94,12 +94,12 @@ async def connect_users(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(err),
-        )
+        ) from err
     except ProfileNotFound as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(err),
-        )
+        ) from err
 
 
 @social_router.get(
@@ -123,12 +123,12 @@ async def accept(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(err),
-        )
+        ) from err
     except PermissionDenied as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(err),
-        )
+        ) from err
 
 
 @social_router.get(
@@ -152,12 +152,12 @@ async def block(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(err),
-        )
+        ) from err
     except PermissionDenied as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(err),
-        )
+        ) from err
 
 
 @social_router.get(
@@ -181,12 +181,12 @@ async def unblock(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(err),
-        )
+        ) from err
     except PermissionDenied as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(err),
-        )
+        ) from err
 
 
 @social_router.delete(
@@ -209,9 +209,9 @@ async def delete(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(err),
-        )
+        ) from err
     except PermissionDenied as err:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(err),
-        )
+        ) from err

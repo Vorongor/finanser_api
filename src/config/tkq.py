@@ -1,7 +1,7 @@
 import taskiq_fastapi
-from taskiq_redis import RedisAsyncResultBackend, ListQueueBroker
-from src.config import get_settings
+from taskiq_redis import ListQueueBroker, RedisAsyncResultBackend
 
+from src.config import get_settings
 
 settings = get_settings()
 

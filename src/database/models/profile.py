@@ -1,18 +1,18 @@
 import uuid
-from datetime import datetime, date
+from datetime import date, datetime
 
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import (
-    String,
-    Integer,
-    Text,
     UUID,
-    Enum,
-    DateTime,
-    func,
     Date,
+    DateTime,
+    Enum,
     ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
 )
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database.base import Base
 from src.database.models import UserModel

@@ -1,25 +1,23 @@
-from typing import Optional
-
-from sqlalchemy import select, func, or_, and_
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.database.models import ProfileModel, ProfileConnectionModel
+from src.database.models import ProfileConnectionModel, ProfileModel
 from src.enums import ProfileConnectionStatus
 from src.exceptions import (
+    PermissionDenied,
     ProfileNotFound,
     ProfileOperationError,
-    PermissionDenied,
 )
 from src.schemas import (
     AuthUserSchema,
+    MyConnectionSchema,
     ProfileReadSchema,
-    SocialSearchSchema,
-    SocialResponseSchema,
     SocialConnectionSchema,
     SocialConnectionsResponseSchema,
-    MyConnectionSchema,
+    SocialResponseSchema,
+    SocialSearchSchema,
 )
 
 
@@ -32,7 +30,7 @@ async def _get_profile_for_user(
     )
     profile = stmt.scalar_one_or_none()
     if not profile:
-        raise ProfileNotFound()
+        raise ProfileNotFound() from None
     return profile
 
 
@@ -176,7 +174,7 @@ async def send_connection(
 
     target_profile = await db.get(ProfileModel, target_profile_id)
     if not target_profile:
-        raise ProfileNotFound()
+        raise ProfileNotFound() from None
 
     existing_stmt = await db.execute(
         select(ProfileConnectionModel).where(
@@ -211,10 +209,10 @@ async def send_connection(
     try:
         await db.commit()
         await db.refresh(connection)
-    except IntegrityError:
+    except IntegrityError as err:
         raise ProfileOperationError(
             details="Error occurred while trying to create connection"
-        )
+        ) from err
 
     await db.refresh(
         connection, attribute_names=["requester_profile", "target_profile"]
@@ -251,7 +249,7 @@ async def accept_connection(
     )
     connection = stmt.scalar_one_or_none()
     if not connection:
-        raise ProfileOperationError("Connection not found")
+        raise ProfileOperationError("Connection not found") from None
 
     target_profile = connection.target_profile
     if target_profile.user_id != auth_user.id:
@@ -261,10 +259,10 @@ async def accept_connection(
     try:
         await db.commit()
         await db.refresh(connection)
-    except IntegrityError:
+    except IntegrityError as err:
         raise ProfileOperationError(
             details="Error occurred while trying to accept connection"
-        )
+        ) from err
 
     return SocialConnectionSchema(
         id=connection.id,
@@ -298,7 +296,7 @@ async def block_connection(
     )
     connection = stmt.scalar_one_or_none()
     if not connection:
-        raise ProfileOperationError("Connection not found")
+        raise ProfileOperationError("Connection not found") from None
 
     requester_profile = connection.requester_profile
     target_profile = connection.target_profile
@@ -311,10 +309,10 @@ async def block_connection(
     try:
         await db.commit()
         await db.refresh(connection)
-    except IntegrityError:
+    except IntegrityError as err:
         raise ProfileOperationError(
             details="Error occurred while trying to block connection"
-        )
+        ) from err
 
     return SocialConnectionSchema(
         id=connection.id,
@@ -347,7 +345,7 @@ async def unblock_connection(
     )
     connection = stmt.scalar_one_or_none()
     if not connection:
-        raise ProfileOperationError("Connection not found")
+        raise ProfileOperationError("Connection not found") from None
 
     if (
         connection.status != ProfileConnectionStatus.BLOCKED
@@ -363,10 +361,10 @@ async def unblock_connection(
     try:
         await db.commit()
         await db.refresh(connection)
-    except IntegrityError:
+    except IntegrityError as err:
         raise ProfileOperationError(
             details="Error occurred while trying to unblock connection"
-        )
+        ) from err
 
     return SocialConnectionSchema(
         id=connection.id,
@@ -418,7 +416,7 @@ async def remove_connection(
     try:
         await db.delete(connection)
         await db.commit()
-    except IntegrityError:
+    except IntegrityError as err:
         raise ProfileOperationError(
             details="Error occurred while trying to remove connection"
-        )
+        ) from err

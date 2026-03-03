@@ -1,14 +1,14 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
     Integer,
     String,
-    DateTime,
-    func,
-    Boolean,
     UniqueConstraint,
-    ForeignKey,
+    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

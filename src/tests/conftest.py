@@ -1,7 +1,9 @@
-import pytest
 import asyncio
 from typing import AsyncGenerator
+
+import pytest
 from httpx import ASGITransport, AsyncClient
+
 from src.main import app
 
 

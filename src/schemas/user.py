@@ -1,9 +1,9 @@
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 
-from src.validators import validate_password
 from src.exceptions import PasswordError
+from src.validators import validate_password
 
 
 class UserCreateSchema(BaseModel):
@@ -20,8 +20,8 @@ class UserCreateSchema(BaseModel):
     def validate_password(cls, value: str) -> str:
         try:
             return validate_password(value)
-        except ValueError as error:
-            raise PasswordError(details=str(error))
+        except ValueError as err:
+            raise PasswordError(details=str(err)) from err
 
 
 class UserReadSchema(BaseModel):
@@ -45,5 +45,5 @@ class UserUpdateSchema(BaseModel):
     def validate_password(cls, value: str) -> str:
         try:
             return validate_password(value)
-        except ValueError as error:
-            raise PasswordError(details=str(error))
+        except ValueError as err:
+            raise PasswordError(details=str(err)) from err

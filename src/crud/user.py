@@ -3,18 +3,18 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
-from src.database.models import UserModel, ActivationTokenModel
+from src.database.models import ActivationTokenModel, UserModel
 from src.exceptions import (
     BaseUserException,
+    PermissionDenied,
     UserAlreadyExists,
     UserNotFound,
-    PermissionDenied,
 )
 from src.schemas import (
-    UserReadSchema,
-    UserCreateSchema,
-    UserUpdateSchema,
     AuthUserSchema,
+    UserCreateSchema,
+    UserReadSchema,
+    UserUpdateSchema,
 )
 from src.security.interfaces import JWTAuthManagerInterface
 from src.tasks import send_activation_email_task
@@ -61,7 +61,7 @@ async def _retrieve_user_by_id(
         ],
     )
     if not user:
-        raise UserNotFound()
+        raise UserNotFound() from None
     return user
 
 
@@ -106,8 +106,8 @@ async def create_new_user(
             id=new_user.id,
             email=new_user.email,
         )
-    except IntegrityError:
-        raise UserAlreadyExists()
+    except IntegrityError as err:
+        raise UserAlreadyExists() from err
 
 
 async def get_list_of_all_users(
@@ -157,8 +157,8 @@ async def partial_update_user(
         await db.commit()
         await db.refresh(user)
         return UserReadSchema(id=user.id, email=user.email)
-    except IntegrityError:
-        raise UserAlreadyExists()
+    except IntegrityError as err:
+        raise UserAlreadyExists() from err
 
 
 async def delete_user(
@@ -177,8 +177,8 @@ async def delete_user(
     try:
         await db.delete(user)
         await db.commit()
-    except IntegrityError:
-        raise BaseUserException()
+    except IntegrityError as err:
+        raise BaseUserException()  from err
 
 
 async def activate_user(
@@ -200,10 +200,10 @@ async def activate_user(
         )
         db_token = smtp.scalar_one_or_none()
         if not db_token:
-            raise UserNotFound()
+            raise UserNotFound() from None
         user = db_token.user
         if not user:
-            raise UserNotFound()
+            raise UserNotFound() from None
         if user.is_active:
             await db.delete(db_token)
             await db.commit()
@@ -213,7 +213,7 @@ async def activate_user(
         await db.delete(db_token)
         await db.commit()
         return "User successfully activated"
-    except IntegrityError:
+    except IntegrityError as err:
         raise BaseUserException(
             details="Error occurred while trying to activate user",
-        )
+        ) from err
