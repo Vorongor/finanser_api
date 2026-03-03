@@ -1,6 +1,8 @@
 name: Lint and Test
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -15,42 +17,54 @@ jobs:
         with:
           version: "latest"
 
+      - name: Install dev dependencies
+        run: uv run --group dev python -m pip --version
+
       - name: Lint with Ruff
-        run: uv run ruff check .
+        run: uv run --group dev ruff check .
 
       - name: Check formatting
-        run: uv run ruff format --check .
+        run: uv run --group dev ruff format --check .
 
   test:
     needs: check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Create .env file
+      - name: Create .env file for CI
         run: |
-          touch .env
-          echo "POSTGRES_DB=finanser_db" >> .env
-          echo "POSTGRES_DB_PORT=5432" >> .env
-          echo "POSTGRES_USER=finanser" >> .env
-          echo "POSTGRES_PASSWORD=some_password" >> .env
-          echo "POSTGRES_HOST=pg_finanser" >> .env
-          echo "PGADMIN_DEFAULT_EMAIL=admin@gmail.com" >> .env
-          echo "PGADMIN_DEFAULT_PASSWORD=admin" >> .env
-          echo "SECRET_KEY_ACCESS=838qKq7dGp34hWij3c8txA5ZD2qm9ybt" >> .env
-          echo "SECRET_KEY_REFRESH=cFzRk8kllHMW71wQKLXBqDzl24fkhisw" >> .env
-          echo "JWT_SIGNING_ALGORITHM=HS256" >> .env
-          echo "DOCS_LOGIN=ADMIN" >> .env
-          echo "DOCS_PASSWORD=PASSWORD" >> .env
+          cat << 'EOF' > .env
+          POSTGRES_DB=finanser_db
+          POSTGRES_DB_PORT=5432
+          POSTGRES_USER=finanser
+          POSTGRES_PASSWORD=some_password
+          POSTGRES_HOST=pg_finanser
+          PGADMIN_DEFAULT_EMAIL=ci@example.com
+          PGADMIN_DEFAULT_PASSWORD=ci-password
+          SECRET_KEY_ACCESS=ci-secret-access
+          SECRET_KEY_REFRESH=ci-secret-refresh
+          JWT_SIGNING_ALGORITHM=HS256
+          REDIS_HOST=additional_db
+          REDIS_PORT=6379
+          AWS_REGION=eu-central-1
+          AWS_ACCESS_KEY_ID=dummy
+          AWS_SECRET_ACCESS_KEY=dummy
+          MAIL_FROM=ci@example.com
+          EOF
 
       - name: Start services
         run: docker compose up --build -d
 
-      - name: Wait for services
-        run: sleep 10
+      - name: Wait for services to be healthy
+        run: sleep 20
 
-      - name: Run tests inside container
+      - name: Install test dependencies inside api container
+        run: |
+          docker compose exec -T api uv pip install --system --no-cache pytest pytest-asyncio pytest-cov
+
+      - name: Run tests inside api container
         run: |
           docker compose exec -T api uv run pytest --cov=src
 
